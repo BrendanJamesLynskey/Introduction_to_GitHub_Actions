@@ -22,7 +22,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if gh api -X POST "repos/$GITHUB_REPOSITORY/labels" -f name="demo-$GITHUB_RUN_ID" 2> err.txt; then
+          if gh api -X POST "repos/$GITHUB_REPOSITORY/labels" -f name="demo-$GITHUB_RUN_ID" > out.txt 2> err.txt; then
             echo "::error::the token could write, which it should not"; exit 1
           fi
           echo "refused as expected: $(grep -o 'HTTP [0-9]*' err.txt | head -1)"
