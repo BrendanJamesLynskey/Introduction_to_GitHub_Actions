@@ -1,0 +1,27 @@
+# Every common trigger in one file. Linted with actionlint; kept outside .github/workflows,
+# so it never runs (each trigger is run for real by a workflow in .github/workflows).
+name: Triggers
+on:
+  push:
+    branches: [main, "release/**"]
+    paths-ignore: ["**.md"]
+  pull_request:
+    types: [opened, synchronize, reopened]
+  schedule:
+    - cron: "17 3 * * 1-5"      # 03:17 UTC on weekdays
+  workflow_dispatch:
+    inputs:
+      level:
+        type: choice
+        options: [quick, full]
+  workflow_call:
+    inputs:
+      python-version:
+        type: string
+        default: "3.12"
+
+jobs:
+  show:
+    runs-on: ubuntu-24.04
+    steps:
+      - run: echo "started by ${{ github.event_name }}"

