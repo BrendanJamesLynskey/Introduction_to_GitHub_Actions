@@ -62,6 +62,7 @@ jobs:
             echo "|---|---|"
             echo "| ${{ steps.data.outputs.cache-hit == 'true' }} | $(grep -o 'tests=\"[0-9]*\"' report-*.xml) |"
           } >> "$GITHUB_STEP_SUMMARY"
+          cat "$GITHUB_STEP_SUMMARY"   # also in the log, for readers without a GitHub login
 
   report:
     needs: test
@@ -77,3 +78,4 @@ jobs:
           reports=(report-*.xml)
           echo "### ${#reports[@]} JUnit reports; matrix result: ${{ needs.test.result }}" >> "$GITHUB_STEP_SUMMARY"
           printf -- '- %s\n' "${reports[@]}" >> "$GITHUB_STEP_SUMMARY"
+          cat "$GITHUB_STEP_SUMMARY"
