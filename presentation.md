@@ -139,7 +139,7 @@ jobs:
         run: pytest -rs demo
 ```
 
-`.github/workflows/ci.yml` in this repo: the check that guards `main` (slide 20). A **check** is the pass/fail mark GitHub shows on a commit or pull request; each job reports one. Green on push, [run 37214324600](https://github.com/BrendanJamesLynskey/Introduction_to_GitHub_Actions/actions/runs/37214324600).
+`.github/workflows/ci.yml` in this repo: the check that guards `main` (slide 20). A **check** is the pass/fail mark GitHub shows on a commit or pull request; each job reports one. Green on push to `main`, [run 37216325824](https://github.com/BrendanJamesLynskey/Introduction_to_GitHub_Actions/actions/runs/37216325824).
 
 **Top level**
 
