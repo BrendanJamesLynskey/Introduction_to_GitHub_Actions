@@ -8,7 +8,7 @@ def test_mean():
 
 
 def test_median_odd_and_even():
-    assert median([3, 1, 2]) == 2
+    assert median([3, 1, 2]) == 3  # deliberately wrong: the ruleset demo
     assert median([4, 1, 3, 2]) == 2.5
 
 
