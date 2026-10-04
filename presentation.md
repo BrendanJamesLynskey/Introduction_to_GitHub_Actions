@@ -188,7 +188,11 @@ on:
         default: "3.12"
 ```
 
-`demo/lint_examples/triggers.yml`: every common trigger in one file, checked with `actionlint` (clean). Each trigger also ran for real in a workflow of its own:
+`demo/lint_examples/triggers.yml`: every common trigger in one file, checked with `actionlint` (clean).
+
+![This repository's Actions tab: workflows on the left, runs on the right](images/actions_tab.png)
+
+The **Actions tab**: every run, filterable by workflow, event, status, branch and actor. Each trigger also ran for real in a workflow of its own:
 
 | Trigger | Starts a run when… | Ran here |
 |---------|--------------------|----------|
