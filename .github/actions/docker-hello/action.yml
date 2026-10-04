@@ -1,0 +1,10 @@
+name: Docker hello
+description: A Docker container action (Linux runners only).
+inputs:
+  who:
+    description: Who to greet
+    default: world
+runs:
+  using: docker
+  image: Dockerfile
+  args: ["${{ inputs.who }}"]

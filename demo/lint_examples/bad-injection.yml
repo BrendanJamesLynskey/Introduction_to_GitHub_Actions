@@ -1,0 +1,15 @@
+# DO NOT COPY: two classic mistakes, kept outside .github/workflows so it never runs.
+# actionlint's output on this file is recorded in the README.
+name: Comment on pull requests
+on: pull_request_target            # runs with a write token and secrets, even for forks
+
+jobs:
+  greet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}   # checks out the fork's code...
+      - run: |
+          echo "Title: ${{ github.event.pull_request.title }}"   # ...and pastes its title into a script
+          ./build.sh                                              # ...then runs the fork's code

@@ -1,0 +1,28 @@
+name: "Demo: reusable workflow"
+
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        type: string
+        default: "3.12"
+    outputs:
+      pytest-version:
+        description: pytest version used by the tests
+        value: ${{ jobs.test.outputs.pytest }}
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    outputs:
+      pytest: ${{ steps.setup.outputs.pytest-version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - id: setup
+        uses: ./.github/actions/setup-demo
+        with:
+          python-version: ${{ inputs.python-version }}
+      - run: pytest -rs demo

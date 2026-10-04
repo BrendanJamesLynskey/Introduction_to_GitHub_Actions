@@ -1,0 +1,12 @@
+name: JS hello
+description: A JavaScript action with no dependencies.
+inputs:
+  who:
+    description: Who to greet
+    default: world
+outputs:
+  greeting:
+    description: The greeting it made
+runs:
+  using: node24
+  main: index.js

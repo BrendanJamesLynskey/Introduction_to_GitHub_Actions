@@ -1,0 +1,62 @@
+name: "Demo: needs, outputs, services, status functions"
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [".github/workflows/demo-jobs.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    runs-on: ubuntu-24.04
+    outputs:
+      stamp: ${{ steps.s.outputs.stamp }}
+    steps:
+      - id: s
+        run: echo "stamp=$(date -u +%Y%m%dT%H%M%S)-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+  service:
+    needs: prepare
+    runs-on: ubuntu-24.04
+    services:
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 5
+    steps:
+      - name: Talk to the service container
+        run: |
+          python3 - <<'PY'
+          import socket
+          s = socket.create_connection(("localhost", 6379), timeout=5)
+          s.sendall(b"PING\r\n")
+          reply = s.recv(64)
+          print("redis replied", reply)
+          assert reply == b"+PONG\r\n"
+          PY
+      - run: echo "stamp from prepare = ${{ needs.prepare.outputs.stamp }}"
+
+  status:
+    needs: [prepare, service]
+    runs-on: ubuntu-24.04
+    steps:
+      - id: flaky
+        name: A step allowed to fail
+        continue-on-error: true
+        run: exit 3
+      - name: Runs only because the step above failed
+        if: steps.flaky.outcome == 'failure'
+        run: echo "outcome=${{ steps.flaky.outcome }} conclusion=${{ steps.flaky.conclusion }}"
+      - name: Skipped, because the job has not failed
+        if: failure()
+        run: echo "never printed"
+      - name: Always runs (clean-up)
+        if: always()
+        run: echo "event=${{ github.event_name }} actor=${{ github.actor }} ref=${{ github.ref_name }}"

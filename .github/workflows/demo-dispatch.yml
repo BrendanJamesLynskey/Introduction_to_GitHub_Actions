@@ -1,0 +1,35 @@
+name: "Demo: workflow_dispatch with inputs"
+
+on:
+  workflow_dispatch:
+    inputs:
+      level:
+        description: How much to run
+        type: choice
+        options: [quick, full]
+        default: quick
+      dry_run:
+        description: Print the plan only
+        type: boolean
+        default: true
+      note:
+        description: Free text (treated as untrusted)
+        type: string
+        default: hello
+
+permissions:
+  contents: read
+
+jobs:
+  run:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Use the inputs
+        env:
+          NOTE: ${{ inputs.note }}   # through env, never pasted into the script
+        run: |
+          echo "level=${{ inputs.level }} dry_run=${{ inputs.dry_run }}"
+          printf 'note=%s\n' "$NOTE"
+      - name: Full run only
+        if: inputs.level == 'full' && !inputs.dry_run
+        run: echo "running the full suite"

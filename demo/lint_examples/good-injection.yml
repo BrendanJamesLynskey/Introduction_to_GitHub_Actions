@@ -1,0 +1,16 @@
+# The safe shape: pull_request (no secrets for forks), untrusted text passed through env.
+name: Comment on pull requests
+on: pull_request
+
+permissions:
+  contents: read
+
+jobs:
+  greet:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print the title safely
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          printf 'Title: %s\n' "$TITLE"

@@ -1,0 +1,19 @@
+name: "Demo: environment, secret and protection rule"
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    environment: demo   # a 1-minute wait timer and a main-only branch rule protect it
+    steps:
+      - name: Use an environment secret
+        env:
+          DEMO_SECRET: ${{ secrets.DEMO_SECRET }}
+        run: |
+          echo "the secret is: $DEMO_SECRET"        # the log shows ***
+          echo "its length is ${#DEMO_SECRET}"

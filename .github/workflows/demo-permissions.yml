@@ -1,0 +1,47 @@
+name: "Demo: least-privilege token and OIDC"
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [".github/workflows/demo-permissions.yml"]
+
+permissions: {}   # nothing by default; each job asks for what it needs
+
+jobs:
+  read-only:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Reading the repo works
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api "repos/$GITHUB_REPOSITORY/contents/README.md" --jq .name
+      - name: Writing (creating an issue label) is refused
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh api -X POST "repos/$GITHUB_REPOSITORY/labels" -f name="demo-$GITHUB_RUN_ID" 2> err.txt; then
+            echo "::error::the token could write, which it should not"; exit 1
+          fi
+          echo "refused as expected: $(grep -o 'HTTP [0-9]*' err.txt | head -1)"
+          echo "Write refused: \`$(grep -o 'HTTP [0-9]*' err.txt | head -1)\`" >> "$GITHUB_STEP_SUMMARY"
+
+  oidc-claims:
+    runs-on: ubuntu-24.04
+    permissions:
+      id-token: write   # lets the job ask GitHub for a signed OIDC token
+    steps:
+      - name: Request a token and print its claims (never the token itself)
+        run: |
+          RESP=$(curl -sS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+                 "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.example.com")
+          python3 - "$RESP" <<'PY'
+          import base64, json, sys
+          jwt = json.loads(sys.argv[1])["value"]
+          body = jwt.split(".")[1]
+          claims = json.loads(base64.urlsafe_b64decode(body + "=" * (-len(body) % 4)))
+          for k in ("iss", "aud", "sub", "repository", "ref", "event_name", "workflow_ref"):
+              print(f"{k:13} {claims[k]}")
+          PY
